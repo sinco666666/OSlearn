@@ -13,7 +13,6 @@
 #define TICK_NUM 100
 volatile size_t num=0;
 
-
 static void print_ticks() {
     cprintf("%d ticks\n", TICK_NUM);
 #ifdef DEBUG_GRADE
@@ -107,30 +106,21 @@ void interrupt_handler(struct trapframe *tf) {
             // In fact, Call sbi_set_timer will clear STIP, or you can clear it
             // directly.
             // cprintf("Supervisor timer interrupt\n");
-             /* LAB1 EXERCISE2   YOUR CODE :  2211752*/
+             /* LAB1 EXERCISE2   YOUR CODE :  */
             /*(1)设置下次时钟中断- clock_set_next_event()
              *(2)计数器（ticks）加一
              *(3)当计数器加到100的时候，我们会输出一个`100ticks`表示我们触发了100次时钟中断，同时打印次数（num）加一
             * (4)判断打印次数，当打印次数为10时，调用<sbi.h>中的关机函数关机
             */
-
-            clock_set_next_event();
+	    clock_set_next_event();
             ticks++;
-            
-            
-            if (ticks == TICK_NUM) {
-              
-                print_ticks();
-            
-                tick_count = 0;
-              
-                num++;
-                
-             
-                if (num == 10) {
-                  
-                    sbi_shutdown();
-                }
+            if(ticks==100){
+              ticks=0;
+              print_ticks();
+              if(num==10){
+                sbi_shutdown();
+              }
+             num++;
             }
             break;
         case IRQ_H_TIMER:
@@ -165,25 +155,25 @@ void exception_handler(struct trapframe *tf) {
             break;
         case CAUSE_ILLEGAL_INSTRUCTION:
              // 非法指令异常处理
-             /* LAB1 CHALLENGE3   YOUR CODE :  2211752*/
+             /* LAB1 CHALLENGE3   YOUR CODE :  */
             /*(1)输出指令异常类型（ Illegal instruction）
              *(2)输出异常指令地址
              *(3)更新 tf->epc寄存器
             */
-            cprintf("Exception type: Illegal instruction\n");
-            cprintf("Illegal instruction caught at 0x%08x\n", tf->epc);
-
+	cprintf("Exception type:Illegal instruction\n");
+        cprintf("Illegal instruction caught at 0x%08x\n", tf->epc);
+        tf->epc += 4;
             break;
         case CAUSE_BREAKPOINT:
             //断点异常处理
-            /* LAB1 CHALLLENGE3   YOUR CODE :  2211752*/
+            /* LAB1 CHALLLENGE3   YOUR CODE :  */
             /*(1)输出指令异常类型（ breakpoint）
              *(2)输出异常指令地址
              *(3)更新 tf->epc寄存器
             */
-            cprintf("Exception type: Breakpoint\n");
-            cprintf("Breakpoint caught at 0x%08x\n", tf->epc);
-            
+	cprintf("Exception type: breakpoint\n");
+        cprintf("Iebreak caught at 0x%08x\n", tf->epc);
+        tf->epc += 4;
             break;
         case CAUSE_MISALIGNED_LOAD:
             break;
