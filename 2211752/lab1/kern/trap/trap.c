@@ -12,7 +12,7 @@
 
 #define TICK_NUM 100
 volatile size_t num=0;
-volatile size_t tick_count = 0;
+
 
 static void print_ticks() {
     cprintf("%d ticks\n", TICK_NUM);
@@ -115,10 +115,10 @@ void interrupt_handler(struct trapframe *tf) {
             */
 
             clock_set_next_event();
-            tick_count++;
+            ticks++;
             
             
-            if (tick_count == TICK_NUM) {
+            if (ticks == TICK_NUM) {
               
                 print_ticks();
             
