@@ -2,6 +2,8 @@
 #include <list.h>
 #include <string.h>
 #include <buddy.h>
+#include <stdio.h>
+#include <string.h>
 
 free_area_t free_area;
 
@@ -262,6 +264,7 @@ static void alloc_check(void)
         SetPageReserved(p);
     buddy_init();
     buddy_init_memmap(physical_area, total_size_store);
+    cprintf("buddy succeeded!\n");
 }
 
 const struct pmm_manager buddy_pmm_manager = {
@@ -273,179 +276,4 @@ const struct pmm_manager buddy_pmm_manager = {
     .nr_free_pages = buddy_nr_free_pages,
     .check = alloc_check,
 };
-// #include <pmm.h>
-// #include <list.h>
-// #include <string.h>
-// #include <stdio.h>
 
-// #define MAX_ORDER 11  // 假设最大块大小为 2^11 页
-// #define PAGE_SIZE 1   // 每个页面的大小
-// static size_t total_size;
-// static struct Page *physical_area;
-
-// #ifndef PAGE_H
-// #define PAGE_H
-
-// typedef struct Page {
-//     list_entry_t page_link;  // 使用已定义的 list_entry_t
-//     int flags;
-//     size_t property;
-//     int ref;  // 添加引用计数
-// } Page;
-
-// #endif // PAGE_H
-
-// typedef struct free_area {
-//     list_entry_t free_list[MAX_ORDER]; // 使用 list_entry_t
-//     size_t nr_free;
-// } free_area_t;
-
-// free_area_t free_area;
-
-// #define nr_free (free_area.nr_free)
-
-// static void buddy_init(void) {
-//     for (size_t i = 0; i < MAX_ORDER; i++) {
-//         list_init(&free_area.free_list[i]);
-//     }
-//     nr_free = 0;
-// }
-
-// static void buddy_init_memmap(struct Page *base, size_t n) {
-//     assert(n > 0);
-//     struct Page *p = base;
-//     for (; p != base + n; p++) {
-//         assert(PageReserved(p));
-//         p->flags = 0;
-//         p->property = 0;
-//         set_page_ref(p, 0);
-//     }
-//     base->property = n;
-//     SetPageProperty(base);
-//     nr_free += n;
-
-//     // 将整个块添加到 0 号列表（最大可用块）
-//     list_add_before(&free_area.free_list[0], &(base->page_link));
-// }
-
-// static struct Page *buddy_alloc_pages(size_t order) {
-//     if (order >= MAX_ORDER || (1 << order) > nr_free) {
-//         return NULL;
-//     }
-
-//     for (size_t i = order; i < MAX_ORDER; i++) {
-//         if (!list_empty(&free_area.free_list[i])) {
-//             // 找到一个空闲块
-//             list_entry_t *le = list_next(&free_area.free_list[i]);
-//             struct Page *page = le2page(le, page_link);
-//             list_del(le);
-
-//             // 如果这个块大于请求的大小，则需要进行分割
-//             for (size_t j = i; j > order; j--) {
-//                 struct Page *buddy_page = page + (1 << (j - 1));
-//                 SetPageProperty(buddy_page);
-//                 buddy_page->property = (1 << (j - 1));
-//                 list_add_before(&(free_area.free_list[j - 1]), &(buddy_page->page_link));
-//             }
-
-//             // 设置请求的页面
-//             ClearPageProperty(page);
-//             nr_free -= (1 << order);
-//             return page;
-//         }
-//     }
-//     return NULL; // 没有足够的空间
-// }
-
-// static void buddy_free_pages(struct Page *base, size_t n) {
-//     assert(n > 0);
-//     size_t order = 0;
-
-//     while ((1 << order) < n) {
-//         order++;
-//     }
-
-//     // 设置页面的属性为释放状态
-//     base->property = (1 << order);
-//     SetPageProperty(base);
-//     nr_free += (1 << order);
-
-//     // 合并相邻的空闲块
-//     struct Page *buddy_page;
-//     list_entry_t *le;
-
-//     while (order < MAX_ORDER) {
-//         buddy_page = base + (1 << order);
-//         if (PageProperty(buddy_page)) {
-//             // 合并
-//             ClearPageProperty(buddy_page);
-//             nr_free -= (1 << order);
-//             list_del(&(buddy_page->page_link));
-//             order++;
-//             base = (base < buddy_page) ? base : buddy_page; // 保持较小的基地址
-//         } else {
-//             break;
-//         }
-//     }
-
-//     list_add_before(&free_area.free_list[order], &(base->page_link));
-// }
-
-// static size_t buddy_nr_free_pages(void) {
-//     return nr_free;
-// }
-
-// static void buddy_check(void) {
-//     struct Page *p;
-//     size_t total_size_store = total_size;
-
-//     for (p = physical_area; p < physical_area + 1026; p++)
-//         SetPageReserved(p);
-    
-//     buddy_init();
-//     buddy_init_memmap(physical_area, 1026);
-
-//     struct Page *p0, *p1, *p2;
-//     p0 = p1 = p2 = NULL;
-
-//     assert((p0 = alloc_page()) != NULL);
-//     assert((p1 = alloc_page()) != NULL);
-//     assert((p2 = alloc_page()) != NULL);
-
-//     assert(page_ref(p0) == 0 && page_ref(p1) == 0 && page_ref(p2) == 0);
-
-//     list_entry_t *le = &free_area.free_list[0];
-//     while ((le = list_next(le)) != &free_area.free_list[0]) {
-//         p = le2page(le, page_link);
-//         assert(buddy_alloc_pages(p->property) != NULL);
-//     }
-
-//     assert(alloc_page() == NULL);
-
-//     free_page(p0);
-//     free_page(p1);
-//     free_page(p2);
-//     assert(nr_free == 3);
-
-//     assert((p = alloc_pages(3)) == p0);
-//     assert(alloc_page() == NULL);
-
-//     free_pages(p, 3);
-//     assert(nr_free == 0);
-
-//     for (p = physical_area; p < physical_area + total_size_store; p++)
-//         SetPageReserved(p);
-    
-//     buddy_init();
-//     buddy_init_memmap(physical_area, total_size_store);
-// }
-
-// const struct pmm_manager buddy_pmm_manager = {
-//     .name = "buddy_pmm_manager",
-//     .init = buddy_init,
-//     .init_memmap = buddy_init_memmap,
-//     .alloc_pages = buddy_alloc_pages,
-//     .free_pages = buddy_free_pages,
-//     .nr_free_pages = buddy_nr_free_pages,
-//     .check = buddy_check,
-// };
