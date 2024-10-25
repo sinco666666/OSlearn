@@ -6,7 +6,7 @@
 
 #define MAX_ORDER 11
 
-free_area_t free_area[MAX_ORDER];
+extern free_area_t free_area[MAX_ORDER];
 
 #define free_list(i) free_area[(i)].free_list
 #define nr_free(i) free_area[(i)].nr_free
