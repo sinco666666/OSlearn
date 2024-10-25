@@ -69,7 +69,7 @@ void slub_allocator_init() {
 void slub_check(void) {
     for (int i = 0; i < allocator.slab_count; i++) {
         struct slab *slab = &allocator.slabs[i];
-        printf("Slab %d: object size = %zu, free objects = %d\n", 
-               i, slab->object_size, slab->free_objects);
+        cprintf("Slab %d: object size = %zu, free objects = %d\n",
+                i, slab->object_size, slab->free_objects);
     }
 }
