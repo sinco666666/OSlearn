@@ -276,4 +276,3 @@ const struct pmm_manager buddy_pmm_manager = {
     .nr_free_pages = buddy_nr_free_pages,
     .check = alloc_check,
 };
-
