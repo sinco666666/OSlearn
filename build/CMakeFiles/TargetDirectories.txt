@@ -1,3 +1,0 @@
-/home/weiyu/riscv64-ucore-labcodes/build/CMakeFiles/lab3.dir
-/home/weiyu/riscv64-ucore-labcodes/build/CMakeFiles/edit_cache.dir
-/home/weiyu/riscv64-ucore-labcodes/build/CMakeFiles/rebuild_cache.dir
