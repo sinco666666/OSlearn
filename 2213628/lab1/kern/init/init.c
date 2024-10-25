@@ -10,7 +10,6 @@
 #include <string.h>
 #include <trap.h>
 
-
 int kern_init(void) __attribute__((noreturn));
 void grade_backtrace(void);
 
@@ -33,8 +32,7 @@ int kern_init(void) {
     clock_init();  // init clock interrupt
 
     intr_enable();  // enable irq interrupt
-    __asm__ __volatile__("mret");
-    __asm__ __volatile__("ebreak");
+    
     while (1)
         ;
 }
