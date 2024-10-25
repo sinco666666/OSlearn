@@ -11,7 +11,7 @@
 #include <../sync/sync.h>
 #include <riscv.h>
 #include<buddy.h>
-#include<buddy_system_pmm.h>
+#include <buddy_system_pmm.h>
 
 // virtual address of physical page array
 struct Page *pages;
