@@ -43,7 +43,7 @@ ffffffffc0202930 error_string
 0000000000000000 readline.c
 ffffffffc0206030 buf
 0000000000000000 sbi.c
-0000000000000000 default_pmm.c
+0000000000000000 buddy.c
 ffffffffc0200196 print_kerninfo
 ffffffffc0201a38 sbi_console_getchar
 ffffffffc0205000 boot_page_table_sv39
