@@ -1788,7 +1788,7 @@ ffffffffc0200b98:	00001697          	auipc	a3,0x1
 ffffffffc0200b9c:	1c868693          	addi	a3,a3,456 # ffffffffc0201d60 <commands+0x710>
 ffffffffc0200ba0:	00001617          	auipc	a2,0x1
 ffffffffc0200ba4:	17060613          	addi	a2,a2,368 # ffffffffc0201d10 <commands+0x6c0>
-ffffffffc0200ba8:	09f00593          	li	a1,159
+ffffffffc0200ba8:	09e00593          	li	a1,158
 ffffffffc0200bac:	00001517          	auipc	a0,0x1
 ffffffffc0200bb0:	17c50513          	addi	a0,a0,380 # ffffffffc0201d28 <commands+0x6d8>
 ffffffffc0200bb4:	ff4ff0ef          	jal	ra,ffffffffc02003a8 <__panic>
@@ -1797,7 +1797,7 @@ ffffffffc0200bb8:	00001697          	auipc	a3,0x1
 ffffffffc0200bbc:	19068693          	addi	a3,a3,400 # ffffffffc0201d48 <commands+0x6f8>
 ffffffffc0200bc0:	00001617          	auipc	a2,0x1
 ffffffffc0200bc4:	15060613          	addi	a2,a2,336 # ffffffffc0201d10 <commands+0x6c0>
-ffffffffc0200bc8:	09b00593          	li	a1,155
+ffffffffc0200bc8:	09a00593          	li	a1,154
 ffffffffc0200bcc:	00001517          	auipc	a0,0x1
 ffffffffc0200bd0:	15c50513          	addi	a0,a0,348 # ffffffffc0201d28 <commands+0x6d8>
 ffffffffc0200bd4:	fd4ff0ef          	jal	ra,ffffffffc02003a8 <__panic>
@@ -1806,7 +1806,7 @@ ffffffffc0200bd8:	00001697          	auipc	a3,0x1
 ffffffffc0200bdc:	13068693          	addi	a3,a3,304 # ffffffffc0201d08 <commands+0x6b8>
 ffffffffc0200be0:	00001617          	auipc	a2,0x1
 ffffffffc0200be4:	13060613          	addi	a2,a2,304 # ffffffffc0201d10 <commands+0x6c0>
-ffffffffc0200be8:	09a00593          	li	a1,154
+ffffffffc0200be8:	09900593          	li	a1,153
 ffffffffc0200bec:	00001517          	auipc	a0,0x1
 ffffffffc0200bf0:	13c50513          	addi	a0,a0,316 # ffffffffc0201d28 <commands+0x6d8>
 ffffffffc0200bf4:	fb4ff0ef          	jal	ra,ffffffffc02003a8 <__panic>
@@ -1815,13 +1815,13 @@ ffffffffc0200bf8:	00001697          	auipc	a3,0x1
 ffffffffc0200bfc:	19068693          	addi	a3,a3,400 # ffffffffc0201d88 <commands+0x738>
 ffffffffc0200c00:	00001617          	auipc	a2,0x1
 ffffffffc0200c04:	11060613          	addi	a2,a2,272 # ffffffffc0201d10 <commands+0x6c0>
-ffffffffc0200c08:	09c00593          	li	a1,156
+ffffffffc0200c08:	09b00593          	li	a1,155
 ffffffffc0200c0c:	00001517          	auipc	a0,0x1
 ffffffffc0200c10:	11c50513          	addi	a0,a0,284 # ffffffffc0201d28 <commands+0x6d8>
 ffffffffc0200c14:	f94ff0ef          	jal	ra,ffffffffc02003a8 <__panic>
 
 ffffffffc0200c18 <buddy_system_alloc_pages>:
-buddy_system_alloc_pages(size_t n) {
+static struct Page * buddy_system_alloc_pages(size_t n) {
 ffffffffc0200c18:	1101                	addi	sp,sp,-32
 ffffffffc0200c1a:	ec06                	sd	ra,24(sp)
 ffffffffc0200c1c:	e822                	sd	s0,16(sp)
@@ -1921,13 +1921,13 @@ ffffffffc0200cd6:	00001697          	auipc	a3,0x1
 ffffffffc0200cda:	03268693          	addi	a3,a3,50 # ffffffffc0201d08 <commands+0x6b8>
 ffffffffc0200cde:	00001617          	auipc	a2,0x1
 ffffffffc0200ce2:	03260613          	addi	a2,a2,50 # ffffffffc0201d10 <commands+0x6c0>
-ffffffffc0200ce6:	04900593          	li	a1,73
+ffffffffc0200ce6:	04800593          	li	a1,72
 ffffffffc0200cea:	00001517          	auipc	a0,0x1
 ffffffffc0200cee:	03e50513          	addi	a0,a0,62 # ffffffffc0201d28 <commands+0x6d8>
 ffffffffc0200cf2:	eb6ff0ef          	jal	ra,ffffffffc02003a8 <__panic>
 
 ffffffffc0200cf6 <buddy_system_init_memmap>:
-buddy_system_init_memmap(struct Page *base, size_t n) {
+static void buddy_system_init_memmap(struct Page *base, size_t n) {
 ffffffffc0200cf6:	1141                	addi	sp,sp,-16
 ffffffffc0200cf8:	e406                	sd	ra,8(sp)
     assert(n > 0);
@@ -1948,9 +1948,10 @@ ffffffffc0200d12:	a851                	j	ffffffffc0200da6 <buddy_system_init_mem
 ffffffffc0200d14:	6798                	ld	a4,8(a5)
 ffffffffc0200d16:	8b05                	andi	a4,a4,1
 ffffffffc0200d18:	c759                	beqz	a4,ffffffffc0200da6 <buddy_system_init_memmap+0xb0>
-        p->flags = p->property = 0;
-ffffffffc0200d1a:	0007a823          	sw	zero,16(a5)
-ffffffffc0200d1e:	0007b423          	sd	zero,8(a5)
+        p->flags = 0;
+ffffffffc0200d1a:	0007b423          	sd	zero,8(a5)
+        p->property = 0;
+ffffffffc0200d1e:	0007a823          	sw	zero,16(a5)
 ffffffffc0200d22:	0007a023          	sw	zero,0(a5)
     for (; p != base + n; p ++) {
 ffffffffc0200d26:	02878793          	addi	a5,a5,40
@@ -2021,7 +2022,7 @@ ffffffffc0200da6:	00001697          	auipc	a3,0x1
 ffffffffc0200daa:	00268693          	addi	a3,a3,2 # ffffffffc0201da8 <commands+0x758>
 ffffffffc0200dae:	00001617          	auipc	a2,0x1
 ffffffffc0200db2:	f6260613          	addi	a2,a2,-158 # ffffffffc0201d10 <commands+0x6c0>
-ffffffffc0200db6:	45f5                	li	a1,29
+ffffffffc0200db6:	45f1                	li	a1,28
 ffffffffc0200db8:	00001517          	auipc	a0,0x1
 ffffffffc0200dbc:	f7050513          	addi	a0,a0,-144 # ffffffffc0201d28 <commands+0x6d8>
 ffffffffc0200dc0:	de8ff0ef          	jal	ra,ffffffffc02003a8 <__panic>
@@ -2030,7 +2031,7 @@ ffffffffc0200dc4:	00001697          	auipc	a3,0x1
 ffffffffc0200dc8:	f4468693          	addi	a3,a3,-188 # ffffffffc0201d08 <commands+0x6b8>
 ffffffffc0200dcc:	00001617          	auipc	a2,0x1
 ffffffffc0200dd0:	f4460613          	addi	a2,a2,-188 # ffffffffc0201d10 <commands+0x6c0>
-ffffffffc0200dd4:	45e9                	li	a1,26
+ffffffffc0200dd4:	45e5                	li	a1,25
 ffffffffc0200dd6:	00001517          	auipc	a0,0x1
 ffffffffc0200dda:	f5250513          	addi	a0,a0,-174 # ffffffffc0201d28 <commands+0x6d8>
 ffffffffc0200dde:	dcaff0ef          	jal	ra,ffffffffc02003a8 <__panic>

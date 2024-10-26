@@ -20,14 +20,14 @@ buddy_system_init(void) {
     }
     
 }
-
-static void//从能存放最大内存块的链表开始，将要存放的物理内存放到链表中，若不能继续放入到这个链表中，则进行一步步降低能存放内存块大小的链表，
-buddy_system_init_memmap(struct Page *base, size_t n) {
+//从能存放最大内存块的链表开始，将要存放的物理内存放到链表中，若不能继续放入到这个链表中，则进行一步步降低能存放内存块大小的链表，
+static void buddy_system_init_memmap(struct Page *base, size_t n) {
     assert(n > 0);
     struct Page *p = base;
     for (; p != base + n; p ++) {
         assert(PageReserved(p));
-        p->flags = p->property = 0;
+        p->flags = 0;
+        p->property = 0;
         set_page_ref(p, 0);
     }
     size_t curr_size = n;
@@ -68,8 +68,7 @@ static void split_page(int order) {
     return;
 }
 
-static struct Page *
-buddy_system_alloc_pages(size_t n) {
+static struct Page * buddy_system_alloc_pages(size_t n) {
     assert(n > 0);
     if (n > (1 << (MAX_ORDER - 1))) {
         return NULL;
