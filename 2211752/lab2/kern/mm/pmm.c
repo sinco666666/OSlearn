@@ -10,6 +10,9 @@
 #include <string.h>
 #include <../sync/sync.h>
 #include <riscv.h>
+#include<buddy.h>
+#include <buddy_system_pmm.h>
+#include <slub_pmm.h>
 
 // virtual address of physical page array
 struct Page *pages;
@@ -34,7 +37,10 @@ static void check_alloc_page(void);
 
 // init_pmm_manager - initialize a pmm_manager instance
 static void init_pmm_manager(void) {
-    pmm_manager = &best_fit_pmm_manager;
+    //pmm_manager = &best_fit_pmm_manager;
+    //pmm_manager = &buddy_pmm_manager;
+    //pmm_manager = &buddy_system_pmm_manager;
+    pmm_manager = &slub_pmm_manager;
     cprintf("memory management: %s\n", pmm_manager->name);
     pmm_manager->init();
 }

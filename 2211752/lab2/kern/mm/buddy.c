@@ -3,7 +3,7 @@
 #include <string.h>
 #include <buddy.h>
 
-free_area_t free_area;
+extern free_area_t free_area;
 
 #define free_list (free_area.free_list)
 #define nr_free (free_area.nr_free)
