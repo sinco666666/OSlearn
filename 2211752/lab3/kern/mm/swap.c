@@ -2,12 +2,12 @@
 #include <swapfs.h>
 #include <swap_fifo.h>
 #include <swap_clock.h>
+#include<swap_lru.h>
 #include <stdio.h>
 #include <string.h>
 #include <memlayout.h>
 #include <pmm.h>
 #include <mmu.h>
-#include<swap_lru.h>
 
 // the valid vaddr for check is between 0~CHECK_VALID_VADDR-1
 #define CHECK_VALID_VIR_PAGE_NUM 5
