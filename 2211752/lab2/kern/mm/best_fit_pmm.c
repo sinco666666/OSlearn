@@ -55,7 +55,7 @@
  *               (5.2) reset the fields of pages, such as p->ref, p->flags (PageProperty)
  *               (5.3) try to merge low addr or high addr blocks. Notice: should change some pages's p->property correctly.
  */
-extern free_area_t free_area;
+free_area_t free_area;
 
 #define free_list (free_area.free_list)
 #define nr_free (free_area.nr_free)
@@ -100,7 +100,6 @@ best_fit_init_memmap(struct Page *base, size_t n) {
             {
                 list_add(le, &(base->page_link));
             }
-            
         }
     }
 }
@@ -128,12 +127,10 @@ best_fit_alloc_pages(size_t n) {
         }
     }
 
-    if (page != NULL)
-    {
-        list_entry_t *prev = list_prev(&(page->page_link));
+    if (page != NULL) {
+        list_entry_t* prev = list_prev(&(page->page_link));
         list_del(&(page->page_link));
-        if (page->property > n)
-        {
+        if (page->property > n) {
             struct Page *p = page + n;
             p->property = page->property - n;
             SetPageProperty(p);
@@ -353,3 +350,4 @@ const struct pmm_manager best_fit_pmm_manager = {
     .nr_free_pages = best_fit_nr_free_pages,
     .check = best_fit_check,
 };
+
