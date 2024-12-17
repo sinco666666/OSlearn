@@ -8826,7 +8826,7 @@ ffffffffc0204856:	1141                	addi	sp,sp,-16
     panic("process exit!!.\n");
 ffffffffc0204858:	00002617          	auipc	a2,0x2
 ffffffffc020485c:	5b060613          	addi	a2,a2,1456 # ffffffffc0206e08 <default_pmm_manager+0xfb0>
-ffffffffc0204860:	16900593          	li	a1,361
+ffffffffc0204860:	17000593          	li	a1,368
 ffffffffc0204864:	00002517          	auipc	a0,0x2
 ffffffffc0204868:	5d450513          	addi	a0,a0,1492 # ffffffffc0206e38 <default_pmm_manager+0xfe0>
 do_exit(int error_code) {
@@ -9038,7 +9038,7 @@ ffffffffc02049f2:	b72d                	j	ffffffffc020491c <proc_init+0xaa>
         panic("cannot alloc idleproc.\n");
 ffffffffc02049f4:	00002617          	auipc	a2,0x2
 ffffffffc02049f8:	4b460613          	addi	a2,a2,1204 # ffffffffc0206ea8 <default_pmm_manager+0x1050>
-ffffffffc02049fc:	18100593          	li	a1,385
+ffffffffc02049fc:	18800593          	li	a1,392
 ffffffffc0204a00:	00002517          	auipc	a0,0x2
 ffffffffc0204a04:	43850513          	addi	a0,a0,1080 # ffffffffc0206e38 <default_pmm_manager+0xfe0>
 ffffffffc0204a08:	a45fb0ef          	jal	ra,ffffffffc020044c <__panic>
@@ -9047,7 +9047,7 @@ ffffffffc0204a0c:	00002697          	auipc	a3,0x2
 ffffffffc0204a10:	53468693          	addi	a3,a3,1332 # ffffffffc0206f40 <default_pmm_manager+0x10e8>
 ffffffffc0204a14:	00001617          	auipc	a2,0x1
 ffffffffc0204a18:	0ac60613          	addi	a2,a2,172 # ffffffffc0205ac0 <commands+0x8d8>
-ffffffffc0204a1c:	1a800593          	li	a1,424
+ffffffffc0204a1c:	1af00593          	li	a1,431
 ffffffffc0204a20:	00002517          	auipc	a0,0x2
 ffffffffc0204a24:	41850513          	addi	a0,a0,1048 # ffffffffc0206e38 <default_pmm_manager+0xfe0>
 ffffffffc0204a28:	a25fb0ef          	jal	ra,ffffffffc020044c <__panic>
@@ -9056,14 +9056,14 @@ ffffffffc0204a2c:	00002697          	auipc	a3,0x2
 ffffffffc0204a30:	4ec68693          	addi	a3,a3,1260 # ffffffffc0206f18 <default_pmm_manager+0x10c0>
 ffffffffc0204a34:	00001617          	auipc	a2,0x1
 ffffffffc0204a38:	08c60613          	addi	a2,a2,140 # ffffffffc0205ac0 <commands+0x8d8>
-ffffffffc0204a3c:	1a700593          	li	a1,423
+ffffffffc0204a3c:	1ae00593          	li	a1,430
 ffffffffc0204a40:	00002517          	auipc	a0,0x2
 ffffffffc0204a44:	3f850513          	addi	a0,a0,1016 # ffffffffc0206e38 <default_pmm_manager+0xfe0>
 ffffffffc0204a48:	a05fb0ef          	jal	ra,ffffffffc020044c <__panic>
         panic("create init_main failed.\n");
 ffffffffc0204a4c:	00002617          	auipc	a2,0x2
 ffffffffc0204a50:	4a460613          	addi	a2,a2,1188 # ffffffffc0206ef0 <default_pmm_manager+0x1098>
-ffffffffc0204a54:	1a100593          	li	a1,417
+ffffffffc0204a54:	1a800593          	li	a1,424
 ffffffffc0204a58:	00002517          	auipc	a0,0x2
 ffffffffc0204a5c:	3e050513          	addi	a0,a0,992 # ffffffffc0206e38 <default_pmm_manager+0xfe0>
 ffffffffc0204a60:	9edfb0ef          	jal	ra,ffffffffc020044c <__panic>

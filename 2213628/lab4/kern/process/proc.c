@@ -310,35 +310,42 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
      */
 
     //    1. call alloc_proc to allocate a proc_struct
+    // 调用alloc_proc，首先获得一块用户信息块。
     if ((proc = alloc_proc()) == NULL)
     {
         goto fork_out;
     }
     //    2. call setup_kstack to allocate a kernel stack for child process
+    // 为进程分配一个内核栈。
     proc->parent = current;
     if (setup_kstack(proc))
     {
         goto bad_fork_cleanup_kstack;
     }
     //    3. call copy_mm to dup OR share mm according clone_flag
+    // 复制原进程的内存管理信息到新进程（但内核线程不必做此事）
     if (copy_mm(clone_flags, proc))
     {
         goto bad_fork_cleanup_proc;
     }
     //    4. call copy_thread to setup tf & context in proc_struct
+    // 复制原进程上下文到新进程
     copy_thread(proc, stack, tf);
     //    5. insert proc_struct into hash_list && proc_list
-    bool flag;
-    local_intr_save(flag);
+    // 将新进程添加到进程列表
+    bool intr_flag;
+    local_intr_save(intr_flag);
     {
         proc->pid = get_pid();
         hash_proc(proc);
         list_add(&proc_list, &(proc->list_link));
     }
-    local_intr_restore(flag);
+    local_intr_restore(intr_flag);
     //    6. call wakeup_proc to make the new child process RUNNABLE
+    // 唤醒新进程
     wakeup_proc(proc);
     //    7. set ret vaule using child proc's pid
+    //返回新进程号
     ret = proc->pid;
     
 
