@@ -16,7 +16,7 @@ kern_entry:
     # t1 := 8 << 60，设置 satp 的 MODE 字段为 Sv39
     li      t1, 8 << 60
     # 将刚才计算出的预设三级页表物理页号附加到 satp 中
-    or      t0, t0, t1
+    or      t0, t0, t1  
     # 将算出的 t0(即新的MODE|页表基址物理页号) 覆盖到 satp 中
     csrw    satp, t0
     # 使用 sfence.vma 指令刷新 TLB

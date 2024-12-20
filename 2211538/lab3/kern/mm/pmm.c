@@ -89,40 +89,69 @@ size_t nr_free_pages(void) {
 
 /* page_init - initialize the physical memory management */
 static void page_init(void) {
+    // 声明一个外部变量 kern_entry，它是一个字符数组，通常指向内核的入口点
     extern char kern_entry[];
 
+    // 计算虚拟地址（VA）和物理地址（PA）之间的偏移量
     va_pa_offset = KERNBASE - 0x80200000;
+
+    // 定义一个名为 mem_begin 的变量，它存储了物理内存的起始地址
     uint64_t mem_begin = KERNEL_BEGIN_PADDR;
+
+    // 计算物理内存的大小，通过从 PHYSICAL_MEMORY_END 减去 KERNEL_BEGIN_PADDR 得到
     uint64_t mem_size = PHYSICAL_MEMORY_END - KERNEL_BEGIN_PADDR;
-    uint64_t mem_end = PHYSICAL_MEMORY_END; //硬编码取代 sbi_query_memory()接口
+
+    // 定义一个名为 mem_end 的变量，它存储了物理内存的结束地址
+    uint64_t mem_end = PHYSICAL_MEMORY_END; // 硬编码取代 sbi_query_memory()接口
+
+    // 打印物理内存的起始地址、结束地址和大小
     cprintf("membegin %llx memend %llx mem_size %llx\n",mem_begin, mem_end, mem_size);
+
+    // 打印一个标题，表明接下来的内容是物理内存映射
     cprintf("physcial memory map:\n");
+
+    // 打印出物理内存的详细信息，包括总大小、起始地址和结束地址
     cprintf("  memory: 0x%08lx, [0x%08lx, 0x%08lx].\n", mem_size, mem_begin,
             mem_end - 1);
+
+    // 定义一个名为 maxpa 的变量，它存储了物理内存的最大地址
     uint64_t maxpa = mem_end;
 
+    // 检查 maxpa 是否大于 KERNTOP，如果是，则将 maxpa 设置为 KERNTOP
     if (maxpa > KERNTOP) {
         maxpa = KERNTOP;
     }
 
+    // 声明一个外部变量 end，它是一个字符数组，通常指向内核数据段的结束地址
     extern char end[];
 
+    // 计算物理内存中的页数，通过将 maxpa 除以 PGSIZE 得到
     npage = maxpa / PGSIZE;
-    // BBL has put the initial page table at the first available page after the
-    // kernel
-    // so stay away from it by adding extra offset to end
+
+    // BBL 已经将初始页表放在内核之后的第一个可用页面上
+    // 因此，通过在 end 上添加额外的偏移量来远离它
     pages = (struct Page *)ROUNDUP((void *)end, PGSIZE);
+
+    // 遍历 pages 数组，将每个页标记为保留
     for (size_t i = 0; i < npage - nbase; i++) {
         SetPageReserved(pages + i);
     }
 
+    // 计算空闲内存的起始地址，通过将 pages 数组的结束地址转换为物理地址得到
     uintptr_t freemem = PADDR((uintptr_t)pages + sizeof(struct Page) * (npage - nbase));
+
+    // 将 mem_begin 设置为空闲内存的起始地址，向上舍入到 PGSIZE 的倍数
     mem_begin = ROUNDUP(freemem, PGSIZE);
+
+    // 将 mem_end 设置为物理内存的结束地址，向下舍入到 PGSIZE 的倍数
     mem_end = ROUNDDOWN(mem_end, PGSIZE);
+
+    // 检查空闲内存是否小于物理内存的结束地址，如果是，则调用 init_memmap 函数初始化内存映射
     if (freemem < mem_end) {
         init_memmap(pa2page(mem_begin), (mem_end - mem_begin) / PGSIZE);
     }
 }
+
 
 static void enable_paging(void) {
     write_csr(satp, (0x8000000000000000) | (boot_cr3 >> RISCV_PGSHIFT));

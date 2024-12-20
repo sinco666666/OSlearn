@@ -11,7 +11,7 @@ void ide_init(void) {}
 
 #define MAX_IDE 2
 #define MAX_DISK_NSECS 56
-static char ide[MAX_DISK_NSECS * SECTSIZE];
+static char ide[MAX_DISK_NSECS * SECTSIZE]; //从内核的静态存储(static)区里面分出一块内存， 声称这块存储区域是”硬盘“，然后包裹一下给出”硬盘IO“的接口。
 
 bool ide_device_valid(unsigned short ideno) { return ideno < MAX_IDE; }
 
