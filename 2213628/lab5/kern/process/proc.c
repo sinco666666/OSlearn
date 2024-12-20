@@ -110,6 +110,26 @@ alloc_proc(void) {
      *       uint32_t wait_state;                        // waiting state
      *       struct proc_struct *cptr, *yptr, *optr;     // relations between processes
      */
+
+    proc->state = PROC_UNINIT;
+    proc->pid = -1;
+
+    proc->state = 0;
+    proc->cptr = NULL; // 初始化 cptr 为 NULL，表示没有子进程
+    proc->yptr = NULL; // 初始化 yptr 为 NULL，表示没有“年轻”兄弟进程
+    proc->optr = NULL; // 初始化 optr 为 NULL，表示没有“老”兄弟进程
+
+
+    proc->runs = 0;
+    proc->kstack = 0;
+    proc->need_resched = 0;
+    proc->parent = NULL;
+    proc->mm = NULL;
+    memset(&(proc->context), 0, sizeof(struct context));
+    proc->tf = NULL;
+    proc->cr3 = boot_cr3;
+    proc->flags = 0;
+    memset(proc->name, 0, PROC_NAME_LEN + 1);
     }
     return proc;
 }
@@ -206,7 +226,15 @@ proc_run(struct proc_struct *proc) {
         *   lcr3():                   Modify the value of CR3 register
         *   switch_to():              Context switching between two processes
         */
-
+       bool intr_flag;
+       struct proc_struct *prev = current, *next = proc;
+       local_intr_save(intr_flag);
+       {
+        current = proc;
+        lcr3(next->cr3);
+        switch_to(&(prev->context), &(next->context));
+       }
+       local_intr_restore(intr_flag);
     }
 }
 
@@ -403,6 +431,53 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     *    update step 1: set child proc's parent to current process, make sure current process's wait_state is 0
     *    update step 5: insert proc_struct into hash_list && proc_list, set the relation links of process
     */
+
+    //    1. call alloc_proc to allocate a proc_struct
+    // 调用alloc_proc，首先获得一块用户信息块。
+    if ((proc = alloc_proc()) == NULL)
+    {
+        goto fork_out;
+    }
+
+    // 更新1：当前进程的wait_state是0
+    current->wait_state = 0;
+
+
+    //    2. call setup_kstack to allocate a kernel stack for child process
+    // 为进程分配一个内核栈。
+    proc->parent = current;
+    if (setup_kstack(proc))
+    {
+        goto bad_fork_cleanup_kstack;
+    }
+    //    3. call copy_mm to dup OR share mm according clone_flag
+    // 复制原进程的内存管理信息到新进程（但内核线程不必做此事）
+    if (copy_mm(clone_flags, proc))
+    {
+        goto bad_fork_cleanup_proc;
+    }
+    //    4. call copy_thread to setup tf & context in proc_struct
+    // 复制原进程上下文到新进程
+    copy_thread(proc, stack, tf);
+    //    5. insert proc_struct into hash_list && proc_list
+    // 将新进程添加到进程列表
+    bool intr_flag;
+    local_intr_save(intr_flag);
+    {
+        proc->pid = get_pid();
+        hash_proc(proc);
+        //list_add(&proc_list, &(proc->list_link));
+
+        // 更新2：设置进程间的关系链接
+        set_links(proc);
+    }
+    local_intr_restore(intr_flag);
+    //    6. call wakeup_proc to make the new child process RUNNABLE
+    // 唤醒新进程
+    wakeup_proc(proc);
+    //    7. set ret vaule using child proc's pid
+    //返回新进程号
+    ret = proc->pid;
  
 fork_out:
     return ret;
@@ -603,7 +678,9 @@ load_icode(unsigned char *binary, size_t size) {
      *          tf->status should be appropriate for user program (the value of sstatus)
      *          hint: check meaning of SPP, SPIE in SSTATUS, use them by SSTATUS_SPP, SSTATUS_SPIE(defined in risv.h)
      */
-
+    tf->gpr.sp = USTACKTOP;
+    tf->epc = elf->e_entry;
+    tf->status = sstatus & ~(SSTATUS_SPP | SSTATUS_SPIE);
 
     ret = 0;
 out:
