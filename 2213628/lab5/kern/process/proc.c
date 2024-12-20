@@ -87,7 +87,7 @@ static struct proc_struct *
 alloc_proc(void) {
     struct proc_struct *proc = kmalloc(sizeof(struct proc_struct));
     if (proc != NULL) {
-    //LAB4:EXERCISE1 YOUR CODE
+    //LAB4:EXERCISE1 2213628
     /*
      * below fields in proc_struct need to be initialized
      *       enum proc_state state;                      // Process state
@@ -104,33 +104,29 @@ alloc_proc(void) {
      *       char name[PROC_NAME_LEN + 1];               // Process name
      */
 
-     //LAB5 YOUR CODE : (update LAB4 steps)
+     //LAB5 2213628 : (update LAB4 steps)
      /*
      * below fields(add in LAB5) in proc_struct need to be initialized  
      *       uint32_t wait_state;                        // waiting state
      *       struct proc_struct *cptr, *yptr, *optr;     // relations between processes
      */
-
     proc->state = PROC_UNINIT;
-    proc->pid = -1;
-
-    proc->state = 0;
-    proc->cptr = NULL; // 初始化 cptr 为 NULL，表示没有子进程
-    proc->yptr = NULL; // 初始化 yptr 为 NULL，表示没有“年轻”兄弟进程
-    proc->optr = NULL; // 初始化 optr 为 NULL，表示没有“老”兄弟进程
-
-
-    proc->runs = 0;
-    proc->kstack = 0;
-    proc->need_resched = 0;
-    proc->parent = NULL;
-    proc->mm = NULL;
-    memset(&(proc->context), 0, sizeof(struct context));
-    proc->tf = NULL;
-    proc->cr3 = boot_cr3;
-    proc->flags = 0;
-    memset(proc->name, 0, PROC_NAME_LEN + 1);
-    }
+	proc->pid = -1;
+	proc->runs = 0;
+	proc->kstack = 0;
+	proc->need_resched = 0;
+	proc->parent = NULL;
+	proc->mm = NULL;
+	memset(&(proc->context), 0, sizeof(struct context));
+	proc->tf = NULL;
+	proc->cr3 = boot_cr3;
+	proc->flags = 0;
+	memset(proc->name, 0, PROC_NAME_LEN+1);
+	proc->wait_state = 0;
+	proc->cptr = NULL; // Child Pointer 表示当前进程的子进程
+	proc->optr = NULL; // Older Pointer 表示当前进程的前一个兄弟进程
+	proc->yptr = NULL; // Younger Pointer 表示当前进程的后一个兄弟进程
+	}
     return proc;
 }
 
@@ -217,7 +213,7 @@ get_pid(void) {
 void
 proc_run(struct proc_struct *proc) {
     if (proc != current) {
-        // LAB4:EXERCISE3 YOUR CODE
+        // LAB4:EXERCISE3 2213628
         /*
         * Some Useful MACROs, Functions and DEFINEs, you can use them in below implementation.
         * MACROs or Functions:
@@ -226,15 +222,15 @@ proc_run(struct proc_struct *proc) {
         *   lcr3():                   Modify the value of CR3 register
         *   switch_to():              Context switching between two processes
         */
-       bool intr_flag;
-       struct proc_struct *prev = current, *next = proc;
-       local_intr_save(intr_flag);
-       {
-        current = proc;
-        lcr3(next->cr3);
-        switch_to(&(prev->context), &(next->context));
-       }
-       local_intr_restore(intr_flag);
+	 bool intr_flag;
+        struct proc_struct *prev = current, *next = proc;
+        local_intr_save(intr_flag);
+        {
+            current = proc;
+            lcr3(next->cr3);
+            switch_to(&(prev->context), &(next->context));
+        }
+        local_intr_restore(intr_flag);
     }
 }
 
@@ -397,7 +393,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
         goto fork_out;
     }
     ret = -E_NO_MEM;
-    //LAB4:EXERCISE2 YOUR CODE
+    //LAB4:EXERCISE2 2213628
     /*
      * Some Useful MACROs, Functions and DEFINEs, you can use them in below implementation.
      * MACROs or Functions:
@@ -423,7 +419,7 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     //    6. call wakeup_proc to make the new child process RUNNABLE
     //    7. set ret vaule using child proc's pid
 
-    //LAB5 YOUR CODE : (update LAB4 steps)
+    //LAB5 2213628 : (update LAB4 steps)
     //TIPS: you should modify your written code in lab4(step1 and step5), not add more code.
    /* Some Functions
     *    set_links:  set the relation links of process.  ALSO SEE: remove_links:  lean the relation links of process 
@@ -438,28 +434,19 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
     {
         goto fork_out;
     }
-
-    // 更新1：当前进程的wait_state是0
-    current->wait_state = 0;
-
-
-    //    2. call setup_kstack to allocate a kernel stack for child process
     // 为进程分配一个内核栈。
     proc->parent = current;
-    if (setup_kstack(proc))
-    {
-        goto bad_fork_cleanup_kstack;
-    }
-    //    3. call copy_mm to dup OR share mm according clone_flag
-    // 复制原进程的内存管理信息到新进程（但内核线程不必做此事）
-    if (copy_mm(clone_flags, proc))
-    {
+    // 更新：当前进程的wait_state是0
+    assert(current->wait_state == 0);
+    if(setup_kstack(proc) != 0) {
         goto bad_fork_cleanup_proc;
     }
-    //    4. call copy_thread to setup tf & context in proc_struct
+    // 复制原进程的内存管理信息到新进程（但内核线程不必做此事）
+    if(copy_mm(clone_flags, proc) != 0) {
+        goto bad_fork_cleanup_kstack;
+    }
     // 复制原进程上下文到新进程
     copy_thread(proc, stack, tf);
-    //    5. insert proc_struct into hash_list && proc_list
     // 将新进程添加到进程列表
     bool intr_flag;
     local_intr_save(intr_flag);
@@ -467,18 +454,14 @@ do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf) {
         proc->pid = get_pid();
         hash_proc(proc);
         //list_add(&proc_list, &(proc->list_link));
-
-        // 更新2：设置进程间的关系链接
+        // 更新：设置进程间的关系链接
         set_links(proc);
     }
     local_intr_restore(intr_flag);
-    //    6. call wakeup_proc to make the new child process RUNNABLE
     // 唤醒新进程
     wakeup_proc(proc);
-    //    7. set ret vaule using child proc's pid
     //返回新进程号
     ret = proc->pid;
- 
 fork_out:
     return ret;
 
@@ -556,14 +539,17 @@ load_icode(unsigned char *binary, size_t size) {
     int ret = -E_NO_MEM;
     struct mm_struct *mm;
     //(1) create a new mm for current process
+    //为当前流程创建一个新的mm
     if ((mm = mm_create()) == NULL) {
         goto bad_mm;
     }
     //(2) create a new PDT, and mm->pgdir= kernel virtual addr of PDT
+    //为当前流程创建一个新的PDT
     if (setup_pgdir(mm) != 0) {
         goto bad_pgdir_cleanup_mm;
     }
     //(3) copy TEXT/DATA section, build BSS parts in binary to memory space of process
+    //复制TEXT/DATA段，将BSS部分以二进制形式建立到进程内存空间
     struct Page *page;
     //(3.1) get the file header of the bianry program (ELF format)
     struct elfhdr *elf = (struct elfhdr *)binary;
@@ -650,6 +636,7 @@ load_icode(unsigned char *binary, size_t size) {
         }
     }
     //(4) build user stack memory
+    //设置用户栈
     vm_flags = VM_READ | VM_WRITE | VM_STACK;
     if ((ret = mm_map(mm, USTACKTOP - USTACKSIZE, USTACKSIZE, vm_flags, NULL)) != 0) {
         goto bad_cleanup_mmap;
@@ -660,6 +647,7 @@ load_icode(unsigned char *binary, size_t size) {
     assert(pgdir_alloc_page(mm->pgdir, USTACKTOP-4*PGSIZE , PTE_USER) != NULL);
     
     //(5) set current process's mm, sr3, and set CR3 reg = physical addr of Page Directory
+    //设置当前进程的 mm , cr3 , 设置 satp 寄存器
     mm_count_inc(mm);
     current->mm = mm;
     current->cr3 = PADDR(mm->pgdir);
@@ -670,7 +658,7 @@ load_icode(unsigned char *binary, size_t size) {
     // Keep sstatus
     uintptr_t sstatus = tf->status;
     memset(tf, 0, sizeof(struct trapframe));
-    /* LAB5:EXERCISE1 YOUR CODE
+    /* LAB5:EXERCISE1 2213628 
      * should set tf->gpr.sp, tf->epc, tf->status
      * NOTICE: If we set trapframe correctly, then the user level process can return to USER MODE from kernel. So
      *          tf->gpr.sp should be user stack top (the value of sp)
@@ -678,6 +666,9 @@ load_icode(unsigned char *binary, size_t size) {
      *          tf->status should be appropriate for user program (the value of sstatus)
      *          hint: check meaning of SPP, SPIE in SSTATUS, use them by SSTATUS_SPP, SSTATUS_SPIE(defined in risv.h)
      */
+    //设置 trapframe ，将 gpr.sp 指向用户栈顶，将 epc 设置为 ELF 文件的入口地址，设置
+    //sstatus 寄存器，将 SSTATUS_SPP 位置 0，表示退出当前中断后进入用户态，将
+    //SSTATUS_SPIE 位置 1，表示退出当前中断后开启中断。
     tf->gpr.sp = USTACKTOP;
     tf->epc = elf->e_entry;
     tf->status = sstatus & ~(SSTATUS_SPP | SSTATUS_SPIE);
@@ -715,6 +706,7 @@ do_execve(const char *name, size_t len, unsigned char *binary, size_t size) {
         cputs("mm != NULL");
         lcr3(boot_cr3);
         if (mm_count_dec(mm) == 0) {
+            //调用exit_mmap(mm)&put_pgdir（mm）来回收当前进程的内存空间
             exit_mmap(mm);
             put_pgdir(mm);
             mm_destroy(mm);
@@ -722,6 +714,7 @@ do_execve(const char *name, size_t len, unsigned char *binary, size_t size) {
         current->mm = NULL;
     }
     int ret;
+    //调用load_icode根据二进制程序设置新的内存空间。
     if ((ret = load_icode(binary, size)) != 0) {
         goto execve_exit;
     }
@@ -836,7 +829,7 @@ kernel_execve(const char *name, unsigned char *binary, size_t size) {
         "sw a0, %0\n"
         : "=m"(ret)
         : "i"(SYS_exec), "m"(name), "m"(len), "m"(binary), "m"(size)
-        : "memory");
+        : "memory");//这里内联汇编的格式，和用户态调用ecall的格式类似，只是ecall换成了ebreak
     cprintf("ret = %d\n", ret);
     return ret;
 }

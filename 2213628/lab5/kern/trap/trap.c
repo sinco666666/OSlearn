@@ -18,7 +18,6 @@
 #include <sbi.h>
 
 #define TICK_NUM 100
-volatile size_t num=0;
 
 static void print_ticks() {
     cprintf("%d ticks\n",TICK_NUM);
@@ -32,11 +31,12 @@ static void print_ticks() {
 void
 idt_init(void) {
     extern void __alltraps(void);
+    //将sscratch寄存器设置为0，表示当前在内核中执行的异常向量
     /* Set sscratch register to 0, indicating to exception vector that we are
      * presently executing in the kernel */
-    write_csr(sscratch, 0);
+    write_csr(sscratch, 0);//设置异常向量地址
     /* Set the exception vector address */
-    write_csr(stvec, &__alltraps);
+    write_csr(stvec, &__alltraps);//允许内核访问用户内存
     /* Allow kernel to access user memory */
     set_csr(sstatus, SSTATUS_SUM);
 }
@@ -147,15 +147,9 @@ void interrupt_handler(struct trapframe *tf) {
             // directly.
             // clear_csr(sip, SIP_STIP);
             clock_set_next_event();
-            static int ticks = 0;
-            ticks++;
-            if (ticks % TICK_NUM == 0){
-            num++;
-            print_ticks();
-            }
-            
-            if (num == 10){
-            sbi_shutdown();
+            if (++ticks % TICK_NUM == 0 && current) {
+                // print_ticks();
+                current->need_resched = 1;
             }
             break;
         case IRQ_H_TIMER:

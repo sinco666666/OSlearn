@@ -665,13 +665,14 @@ do_execve(const char *name, int argc, const char **argv) {
     if (mm != NULL) {
         lcr3(boot_cr3);
         if (mm_count_dec(mm) == 0) {
-            exit_mmap(mm);
+            exit_mmap(mm);//调用exit_mmap(mm)&put_pgdir（mm）来回收当前进程的内存空间
             put_pgdir(mm);
             mm_destroy(mm);
         }
         current->mm = NULL;
     }
     ret= -E_NO_MEM;;
+    //调用load_icode根据二进制程序设置新的内存空间。
     if ((ret = load_icode(fd, argc, kargv)) != 0) {
         goto execve_exit;
     }

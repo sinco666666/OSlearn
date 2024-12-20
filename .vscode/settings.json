@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "buddy.h": "c"
+        "buddy.h": "c",
+        "limits": "c"
     }
 }
