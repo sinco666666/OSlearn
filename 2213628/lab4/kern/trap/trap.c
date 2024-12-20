@@ -10,8 +10,10 @@
 #include <swap.h>
 #include <trap.h>
 #include <vmm.h>
+#include <sbi.h>
 
 #define TICK_NUM 100
+volatile size_t num=0;
 
 static void print_ticks() {
     cprintf("%d ticks\n", TICK_NUM);
@@ -126,8 +128,15 @@ void interrupt_handler(struct trapframe *tf) {
             // directly.
             // clear_csr(sip, SIP_STIP);
             clock_set_next_event();
-            if (++ticks % TICK_NUM == 0) {
-                print_ticks();
+            static int ticks = 0;
+            ticks++;
+            if (ticks % TICK_NUM == 0){
+            num++;
+            print_ticks();
+            }
+            
+            if (num == 10){
+            sbi_shutdown();
             }
             break;
         case IRQ_H_TIMER:
@@ -164,10 +173,14 @@ void exception_handler(struct trapframe *tf) {
             cprintf("Instruction access fault\n");
             break;
         case CAUSE_ILLEGAL_INSTRUCTION:
-            cprintf("Illegal instruction\n");
+            cprintf("Exception type:Illegal instruction\n");
+            cprintf("Illegal instruction caught at %p\n", tf->epc);
+            tf->epc += 4;
             break;
         case CAUSE_BREAKPOINT:
-            cprintf("Breakpoint\n");
+            cprintf("Exception type: breakpoint\n");
+            cprintf("ebreak caught at %p\n", tf->epc);
+            tf->epc += 2;
             break;
         case CAUSE_MISALIGNED_LOAD:
             cprintf("Load address misaligned\n");

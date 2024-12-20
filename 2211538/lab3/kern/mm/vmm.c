@@ -329,6 +329,11 @@ volatile unsigned int pgfault_num=0;
  */
 int
 do_pgfault(struct mm_struct *mm, uint_t error_code, uintptr_t addr) {
+     pte_t* temp = NULL;
+     temp = get_pte(mm->pgdir, addr, 0);
+     if(temp != NULL && (*temp & (PTE_V | PTE_R))) {
+        return lru_pgfault(mm, error_code, addr);
+    }
     int ret = -E_INVAL;
     //try to find a vma which include addr
     struct vma_struct *vma = find_vma(mm, addr);
@@ -352,6 +357,8 @@ do_pgfault(struct mm_struct *mm, uint_t error_code, uintptr_t addr) {
     }
     addr = ROUNDDOWN(addr, PGSIZE);
 
+    perm &= ~PTE_R;
+    
     ret = -E_NO_MEM;
 
     pte_t *ptep=NULL;
